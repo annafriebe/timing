@@ -57,11 +57,8 @@ double Timer::timeUntil(double unixTime)
 
 void Timer::sleepUntil(double seconds)
 {
-	long int microseconds;
-	int toMicro = 1000*1000;
-
-	microseconds = timeUntil(seconds) * toMicro;
-	std::this_thread::sleep_for(std::chrono::microseconds(microseconds));
+	DURATION<double> time_span(seconds);
+	std::this_thread::sleep_until(m_start + time_span);
 }
 
 bool Timer::timeReached(double seconds)
