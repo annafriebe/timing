@@ -22,11 +22,12 @@ int main(int argc, char *argv[]) {
 	int nTaskCalls = 0;
 	double calc = 0;
 	timer.start();
+	int nPeriods = 1;
 	double currentPeriod = period;
 	while(1){
 		task(nTaskCalls, calc);
 		timer.sleepUntil(currentPeriod);
-		currentPeriod += period;
+		currentPeriod = ++nPeriods * period;
 	}
 	cerr << "nTaskCalls: " << nTaskCalls << endl;
 	cerr << "calc: " << calc << endl;
