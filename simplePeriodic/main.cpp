@@ -3,6 +3,8 @@
 #include <thread>
 #include <atomic>
 #include <chrono>
+#include <functional>
+#include <stdlib.h>
 #include <pthread.h>
 #include "Timer.h"
 
@@ -10,9 +12,10 @@ const double period = 0.01;
 using namespace std;
 
 namespace{
-	void task(int& nPeriod, double& calc){
-		for(int i=1; i<=100; ++i){
-			calc +=nPeriod%i;
+	hash<int> intHash;	
+	void task(int& nPeriod, array<int, 100>& calcValues){
+		for(int& val : calcValues){
+			val = intHash(val);
 		}
 		nPeriod++;
 	}
@@ -20,23 +23,29 @@ namespace{
 
 int main(int argc, char *argv[]) {
 	Timer timer;
-	int nTaskCalls = 0;
-	double calc = 0;
+	array<int, 100> calcValues;
 	timer.start();
-	int nPeriods = 1;
-	double currentPeriod = period;
+	int nPeriods = 0;
+	double currentPeriod = 0;
 	pthread_attr_t attr;
 	pthread_attr_init(&attr);
+	// set scheduling policy
 	if(pthread_attr_setschedpolicy(&attr, SCHED_RR) != 0){
 		fprintf(stderr, "Unable to set policy.\n");
 	}
+	// set up random starting values
+	for(int& val : calcValues){
+		val = rand();
+	}
 
 	while(1){
-		task(nTaskCalls, calc);
+		task(nPeriods, calcValues);
+		currentPeriod = nPeriods * period;
 		timer.sleepUntil(currentPeriod);
-		currentPeriod = ++nPeriods * period;
 	}
-	cerr << "nTaskCalls: " << nTaskCalls << endl;
-	cerr << "calc: " << calc << endl;
+	cerr << "nPeriods: " << nPeriods << endl;
+	for(const int& val:calcValues){
+		cerr << val << endl; 
+	}
 	return 0;
 }
