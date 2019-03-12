@@ -13,8 +13,8 @@ using namespace std;
 
 namespace{
 	hash<int> intHash;	
-	void task(int& nPeriod, array<int, 100>& calcValues){
-		for(int& val : calcValues){
+	void task(int& nPeriod, array<size_t, 100>& calcValues){
+		for(auto& val : calcValues){
 			val = intHash(val);
 		}
 		nPeriod++;
@@ -23,7 +23,7 @@ namespace{
 
 int main(int argc, char *argv[]) {
 	Timer timer;
-	array<int, 100> calcValues;
+	array<size_t, 100> calcValues;
 	timer.start();
 	int nPeriods = 0;
 	double currentPeriod = 0;
@@ -34,7 +34,7 @@ int main(int argc, char *argv[]) {
 		fprintf(stderr, "Unable to set policy.\n");
 	}
 	// set up random starting values
-	for(int& val : calcValues){
+	for(auto& val : calcValues){
 		val = rand();
 	}
 
