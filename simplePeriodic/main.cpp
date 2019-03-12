@@ -31,7 +31,12 @@ int main(int argc, char *argv[]) {
 	pthread_attr_init(&attr);
 	// set scheduling policy
 	if(pthread_attr_setschedpolicy(&attr, SCHED_RR) != 0){
-		fprintf(stderr, "Unable to set policy.\n");
+		cerr << "Unable to set policy." << endl;
+	}
+	int policy;
+	pthread_attr_getschedpolicy(&attr, &policy);
+	if(policy == SCHED_RR){
+		cerr << "Policy properly set" << endl;
 	}
 	// set up random starting values
 	for(auto& val : calcValues){
