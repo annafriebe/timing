@@ -4,18 +4,18 @@
 #include <atomic>
 #include <chrono>
 #include <functional>
-#include <stdlib.h>
 #include <pthread.h>
 #include "Timer.h"
 
-const double period = 0.01;
 using namespace std;
 
 namespace{
-	hash<int> intHash;	
-	void task(int& nPeriod, array<size_t, 100>& calcValues){
+	const double period = 0.01;
+	const int moduloVal = 4711;
+	const int addVal = 47;
+	void task(int& nPeriod, array<int, 100>& calcValues){
 		for(auto& val : calcValues){
-			val = intHash(val);
+			val = (val + addVal)%moduloVal;
 		}
 		nPeriod++;
 	}
@@ -23,7 +23,7 @@ namespace{
 
 int main(int argc, char *argv[]) {
 	Timer timer;
-	array<size_t, 100> calcValues;
+	array<int, 100> calcValues;
 	timer.start();
 	int nPeriods = 0;
 	double currentPeriod = 0;
@@ -40,7 +40,7 @@ int main(int argc, char *argv[]) {
 	}
 	// set up random starting values
 	for(auto& val : calcValues){
-		val = rand();
+		val = rand()%moduloVal;
 	}
 
 	while(1){
