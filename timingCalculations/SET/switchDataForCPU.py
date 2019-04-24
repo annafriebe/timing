@@ -27,88 +27,98 @@ def getWakeupDataForCPU(filePath, CPU):
         lines = f.readlines()
         nLines = len(lines)
         wakeupDataForCPU = []
-        for i in range(400, nLines - 400):
+        for i in range(400, nLines - 100):
             line = lines[i].split()
             event = line[3]
             cpu = line[1]
             if event == 'sched_wakeup:' and cpu == CPU:
                 time = timeInNanoSeconds(line[2])
-                wakeupDataForCPU.append(time)
-#                wakeupDataForCPU.append([time, inProcess, outProcess])
+                process = line[4]
+                wakeupDataForCPU.append([time, process])
         return wakeupDataForCPU
 
-#TODO, get waking/ wakeup data
+def getWakeupTimes(wakeupData, process):
+    wakeupTimesList = []
+    for item in wakeupData:
+        time = item[0]
+        wakeupProcess = item[1]
+        if wakeupProcess.startswith(process):
+            wakeupTimesList.append(time)
+    return wakeupTimesList
 
-def getExecutionTimeDict(switchData, process, period=10000000):
+def getSwitchAndWakeupDataForCPU(filePath, CPU):
+    timingData = []
+    with open(filePath) as f:
+        lines = f.readlines()
+        nLines = len(lines)
+        for i in range(400, nLines - 100):
+            line = lines[i].split()
+            event = line[3]
+            cpu = line[1]
+            if (cpu == CPU):
+                if event == 'sched_switch:':
+                    time = timeInNanoSeconds(line[2])
+                    inProcess = line[8]
+                    outProcess = line[4]
+                    timingData.append([0, time, inProcess, outProcess])
+                if event == 'sched_wakeup:': 
+                    time = timeInNanoSeconds(line[2])
+                    process = line[4]
+                    timingData.append([1, time, process])
+        return timingData
+                    
+             
+def getTimeDicts(switchWakeupData, process, period=10000000):
     previousProcess = ""
     releaseTime = 0
-    lastExecutionStoppedTime = 0
-    executionTimeDict = {}
-    executionTimeDict['all'] = []
-    for infoItem in switchData:
-        time = infoItem[0]
-        inProcess = infoItem[1]
-        outProcess = infoItem[2]
-        if inProcess.startswith(process):
-            releaseTime = time
-        if outProcess.startswith(process):
-            if not previousProcess in executionTimeDict:
-                executionTimeDict[previousProcess] = []
-            if releaseTime > 1e-5:
-                if releaseTime - lastExecutionStoppedTime < period / 2:
-                    executionTimeDict[previousProcess][-1] += (time - releaseTime)
-                else:                    
-                    executionTimeDict[previousProcess].append(time - releaseTime)
-            previousProcess = outProcess
-            lastExecutionStoppedTime = time
-            executionTimeDict['all'].append(time - releaseTime)
-        else:
-            if not outProcess.startswith('swapper'):
-                if not previousProcess.startswith(process):
-                    outProcess += '+extra'
-                previousProcess = outProcess
-    return executionTimeDict
-            
-        
-def getExecutionTimeReleaseTimeDict(switchData, process, period=10000000):
-    previousProcess = ""
-    releaseTime = 0
+    schedulingTime = 0
     lastExecutionStoppedTime = 0
     executionTimeDict = {}
     executionTimeDict['all'] = []
     releaseTimeDict = {}
     releaseTimeDict['all'] = []
+    schedulingTimeDict = {}
+    schedulingTimeDict['all'] = []
     previousProcessList = []
-    for infoItem in switchData:
-        time = infoItem[0]
-        inProcess = infoItem[1]
-        outProcess = infoItem[2]
-        if inProcess.startswith(process):
-            releaseTime = time
-        if outProcess.startswith(process):
-            if not previousProcess in executionTimeDict:
-                executionTimeDict[previousProcess] = []
-                releaseTimeDict[previousProcess] = []
-            if releaseTime > 1e-5:
-                if releaseTime - lastExecutionStoppedTime < period / 2:
-                    executionTimeDict[previousProcess][-1] += (time - releaseTime)
-                    executionTimeDict['all'][-1] += (time - releaseTime)
-                else:                    
-                    executionTimeDict[previousProcess].append(time - releaseTime)
-                    executionTimeDict['all'].append(time - releaseTime)
-                    releaseTimeDict[previousProcess].append(releaseTime)
-                    releaseTimeDict['all'].append(releaseTime)
-                    previousProcessList.append(previousProcess)
-            previousProcess = outProcess
-            lastExecutionStoppedTime = time
+    for infoItem in switchWakeupData:
+        eventWakeup = infoItem[0]
+        time = infoItem[1]
+        if eventWakeup == 1:
+            wakeupProcess = infoItem[2]
+            if wakeupProcess.startswith(process):
+                releaseTime = time
         else:
-            if not outProcess.startswith('swapper'):
-                if not previousProcess.startswith(process):
-                    outProcess += previousProcess
-#                    outProcess += '+extra'
+            inProcess = infoItem[2]
+            outProcess = infoItem[3]
+            if inProcess.startswith(process):
+                schedulingTime = time
+            if outProcess.startswith(process):
+                if not previousProcess in executionTimeDict:
+                    executionTimeDict[previousProcess] = []
+                    releaseTimeDict[previousProcess] = []
+                    schedulingTimeDict[previousProcess] = []
+                if releaseTime > 1e-5 and schedulingTime > 1e-5:
+                    if schedulingTime - lastExecutionStoppedTime < period / 2:
+                        executionTimeDict[previousProcess][-1] += (time - schedulingTime)
+                        executionTimeDict['all'][-1] += (time - schedulingTime)
+                    else:                    
+                        executionTimeDict[previousProcess].append(time - schedulingTime)
+                        executionTimeDict['all'].append(time - schedulingTime)
+                        schedulingTimeDict[previousProcess].append(schedulingTime)
+                        schedulingTimeDict['all'].append(schedulingTime)
+                        releaseTimeDict[previousProcess].append(releaseTime)
+                        releaseTimeDict['all'].append(releaseTime)
+                        previousProcessList.append(previousProcess)
                 previousProcess = outProcess
-    return executionTimeDict, releaseTimeDict, previousProcessList
+                lastExecutionStoppedTime = time
+            else:
+                if not outProcess.startswith('swapper'):
+                    if not previousProcess.startswith(process):
+                        outProcess += previousProcess
+                    previousProcess = outProcess
+    return releaseTimeDict, schedulingTimeDict, executionTimeDict, previousProcessList
             
+        
         
 
 

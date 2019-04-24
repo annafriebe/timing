@@ -14,9 +14,23 @@ def drawExecutionTimeDistr(prevProcess, executionTimes):
  #   print(y)
  #   plt.plot(bins, y)
  #   plt.figure()
- #   title = "Sequential execution times, previous process: " + prevProcess
- #   plt.title(title)
- #   plt.plot(executionTimes)
+ 
+def drawSeqExectionTimesAutoCorr(prevProcess, executionTimes):
+    plt.figure()
+    title = "Sequential execution times, previous process: " + prevProcess
+    plt.title(title)
+    plt.plot(executionTimes)
+    autoCorr = np.correlate(executionTimes, executionTimes, mode='full')
+    etNorm = 0
+    for i in range(len(executionTimes)):
+        etNorm += executionTimes[i]**2
+    autoCorr = autoCorr[(int)(autoCorr.size/2):]/etNorm
+    plt.figure()
+    title = "Autocorrelation function, previous process: " + prevProcess
+    plt.title(title)
+    plt.plot(autoCorr)
+    plt.xlim(0, 50)
+    plt.ylim(0.8, 1.0)
     
     
 def drawReleaseTimeDiffDistr(prevProcess, releaseTimesDiff):
@@ -35,11 +49,11 @@ def drawReleaseTimeDistr(prevProcess, releaseTimes):
 #    plt.title(title)
 #    plt.plot(releaseTimes)
  
-def drawWakeUpTimeDistr(wakeupTimes, lo, hi):
+def drawWakeUpTimeDistr(wakeupTimes):
     plt.figure()
     title = "Wake up times: "
     plt.title(title)
-    plt.hist(releaseTimes, bins=70)
+    plt.hist(wakeupTimes, bins=70)
 
 #TODO: draw y-axix lines at separation between 4 states
 def drawAllReleaseTimeDistr(releaseTimes):
