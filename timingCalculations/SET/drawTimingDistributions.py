@@ -49,11 +49,10 @@ def drawReleaseTimeDistr(prevProcess, releaseTimes):
 #    plt.title(title)
 #    plt.plot(releaseTimes)
  
-def drawWakeUpTimeDistr(wakeupTimes):
+def drawTimeHist(times, title):
     plt.figure()
-    title = "Wake up times: "
     plt.title(title)
-    plt.hist(wakeupTimes, bins=70)
+    plt.hist(times, bins=70)
 
 #TODO: draw y-axix lines at separation between 4 states
 def drawAllReleaseTimeDistr(releaseTimes):
@@ -62,7 +61,7 @@ def drawAllReleaseTimeDistr(releaseTimes):
     plt.title(title)
     plt.hist(releaseTimes, bins=70)
 
-def drawTimesPerProcess(releaseTimes, executionTimes, processes):
+def drawTimesPerProcess(releaseTimes, executionTimes, processes, xlabel = "", ylabel = ""):
     releaseTimesPerProcess = []
     executionTimesPerProcess = []
     for i in range(len(processes)):
@@ -75,6 +74,8 @@ def drawTimesPerProcess(releaseTimes, executionTimes, processes):
         executionTimesPerProcess[processes[i]].append(executionTimes[i])
     cycle = plt.rcParams['axes.prop_cycle'].by_key()['color']
     plt.figure()
+    plt.xlabel(xlabel)
+    plt.ylabel(ylabel)
     for i in range(7):
         plt.scatter(releaseTimesPerProcess[i], executionTimesPerProcess[i], c=cycle[i])
 

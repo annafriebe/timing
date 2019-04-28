@@ -9,12 +9,7 @@ def nSmallerThan(data, limit):
     smallerVec = data < limit
     nSmallerThan = np.count_nonzero(smallerVec)
     return nSmallerThan        
-    
-#def calcLogFacDataTable(maxDataValue):
-#    logFacDataTable = np.zeros(maxDataValue)
-#    for j in range(1, int(maxDataValue + 0.5)):
-#        logfacdatai += np.log(j)
-    
+        
 
 def logLikelihood(lam, data):
     output = np.zeros(len(data))
@@ -31,9 +26,15 @@ def calcT(measuredW, expW, varW):
         tmp += np.square(measuredW[i] - expW)/varW
     return tmp/len(measuredW)
 
+#def countInIntervals
+
 def calcPFAPoisson(data):
-    print(len(data))
-    lambdaML = np.mean(data)
+    dataNorm = np.zeros(len(data), dtype=int)
+    minData = np.min(data)
+    scale = 1000
+    for i in range(len(data)):
+        dataNorm[i] = (data[i] - minData)/scale
+    lambdaML = np.mean(dataNorm)
     print("ML lambda: ", lambdaML)
     nGenerated = 100
     generatedData = np.random.poisson(lambdaML, (nGenerated, len(data)))
@@ -45,7 +46,7 @@ def calcPFAPoisson(data):
     expW = np.mean(generatedW)
     varW = np.var(generatedW)
     print(expW.shape)
-    measuredW = logLikelihood(lambdaML, data)
+    measuredW = logLikelihood(lambdaML, dataNorm)
     measuredT = calcT(measuredW, expW, varW)
     print(measuredT.shape)
     print(measuredT)
