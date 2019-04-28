@@ -5,6 +5,7 @@
 #include <chrono>
 #include <functional>
 #include <pthread.h>
+#include <sched.h>
 #include "Timer.h"
 
 using namespace std;
@@ -27,17 +28,33 @@ int main(int argc, char *argv[]) {
 	timer.start();
 	int nPeriods = 0;
 	double currentPeriod = 0;
-	pthread_attr_t attr;
-	pthread_attr_init(&attr);
-	// set scheduling policy
-	if(pthread_attr_setschedpolicy(&attr, SCHED_RR) != 0){
-		cerr << "Unable to set policy." << endl;
+	pthread_t this_thread = pthread_self();
+	struct sched_param params;
+	params.sched_priority = sched_get_priority_max(SCHED_RR);
+	int ret = pthread_setschedparam(this_thread, SCHED_RR, &params);
+    if (ret != 0) {
+		cerr << "Unable to set scheduling parameters." << endl;
 	}
-	int policy;
-	pthread_attr_getschedpolicy(&attr, &policy);
-	if(policy == SCHED_RR){
-		cerr << "Policy properly set" << endl;
+	else {
+		cerr << "Scheduling parameters properly set." << endl;
 	}
+	int policy = 0;
+    ret = pthread_getschedparam(this_thread, &policy, &params);
+    if (ret != 0) {
+        cerr << "Couldn't retrieve real-time scheduling paramers" << endl;
+		return 0;
+    }
+ 
+    // Check the correct policy was applied
+    if(policy != SCHED_RR) {
+       cerr << "Scheduling is NOT SCHED_RR!" << std::endl;
+    } else {
+        cerr << "SCHED_RR OK" << endl;
+    }
+ 
+    // Print thread scheduling priority
+    cerr << "Thread priority is " << params.sched_priority << endl; 
+
 	// set up random starting values
 	for(auto& val : calcValues){
 		val = rand()%moduloVal;
