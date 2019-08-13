@@ -4,7 +4,7 @@ import numpy as np
 import switchDataForCPU
 import drawTimingDistributions
 import GaussianPFAcalc
-import StateTransitionPFAcalc
+#import StateTransitionPFAcalc
 import minSqErrPeriodEstimate
 import cluster
 
@@ -59,10 +59,13 @@ def getTwoProcessStates(previousProcessList):
 
 np.random.seed(300)
 
-switchWakeupData = getSwitchAndWakeupDataForCPU('../../../../reports/20190313-2-CPU2-report', '[001]')
+#switchWakeupData = getSwitchAndWakeupDataForCPU('../../../../reports/20190416-CPU2-report', '[001]')
+switchWakeupData = getSwitchAndWakeupDataForCPU('../../../../tracesReportsPreemptRT/log_p06_1t_0417_1_20sec.txt', '[003]', True)
 
 releaseTimeDict, schedulingTimeDict, executionTimeDict, previousProcessList = \
-getTimeDicts(switchWakeupData, 'simplePeriodic')
+getTimeDicts(switchWakeupData, 'program06', 5000)
+
+#getTimeDicts(switchWakeupData, 'simplePeriodic')
 
 for item in executionTimeDict:
     print(item, len(executionTimeDict[item]))
@@ -127,6 +130,9 @@ for item in releaseTimeDict:
     if item == 'all':
         allReleaseTimes = releaseTimeDict[item]
 
+drawTimeHist(allReleaseTimes, "all release times")
+calcPFAGaussian(allReleaseTimes)
+
 for item in schedulingTimeDict:
     schedulingTimeDict[item] = periodicAdjustedTimes(schedulingTimeDict[item], estimatedPeriod)
     if item == 'all':
@@ -141,26 +147,37 @@ print(len(allReleaseTimes))
 print(len(executionTimeDict['all']))
 
 schedulingReleaseDiff = allSchedulingTimes - allReleaseTimes
+responseTimes = schedulingReleaseDiff +  executionTimeDict['all']
+drawTimeHist(responseTimes, "all response times")
 
-drawTimesPerProcess(allReleaseTimes, executionTimeDict['all'], processes)
-drawTimesPerProcess(allSchedulingTimes, executionTimeDict['all'], processes)
-drawTimesPerProcess(schedulingReleaseDiff, executionTimeDict['all'], processes)
-drawTimesPerProcess(allReleaseTimes, schedulingReleaseDiff, processes)
+calcPFAExp(allReleaseTimes)
 
-for item in releaseTimeDict:
-    if len(releaseTimeDict[item]) > 100:
-        drawReleaseTimeDistr(item, releaseTimeDict[item])
+drawTimesPerProcess(allReleaseTimes, executionTimeDict['all'], processes, "release time", "execution time")
+drawTimesPerProcess(allSchedulingTimes, executionTimeDict['all'], processes, "scheduling time", "execution time")
+drawTimesPerProcess(schedulingReleaseDiff, executionTimeDict['all'], processes, "release delay", "execution time")
+drawTimesPerProcess(allReleaseTimes, schedulingReleaseDiff, processes, "release time", "release delay")
 
-drawTimesPerProcess(allReleaseTimes, allSchedulingTimes, processes)
+#for item in releaseTimeDict:
+#    if len(releaseTimeDict[item]) > 100:
+#        drawReleaseTimeDistr(item, releaseTimeDict[item])
 
-nStates = 7
-labels = kMeansCluster(allSchedulingTimes, executionTimeDict['all'], nStates)
+#drawTimesPerProcess(allReleaseTimes, allSchedulingTimes, processes)
+
+#nStates = 7
+#labels = kMeansCluster(schedulingReleaseDiff, executionTimeDict['all'], nStates)
 
 #timesPerCluster, schedulingTimesPerCluster, executionTimesPerCluster = \
 #splitTimesPerCluster(allSchedulingTimes, executionTimeDict['all'], labels, nStates)
 
-timesPerCluster, schedulingReleaseDiffPerCluster, executionTimesPerCluster = \
-splitTimesPerCluster(schedulingReleaseDiff, executionTimeDict['all'], labels, nStates)
+#timesPerCluster, schedulingReleaseDiffPerCluster, executionTimesPerCluster = \
+#splitTimesPerCluster(schedulingReleaseDiff, executionTimeDict['all'], labels, nStates)
+
+#for i in range(len(schedulingReleaseDiffPerCluster)):
+#    if len(schedulingReleaseDiffPerCluster[i]) > 100:
+#        responseTimes =  schedulingReleaseDiffPerCluster[i] + executionTimesPerCluster[i]
+#        title = "response times for cluster" + str(i)
+#        drawTimeHist(responseTimes, title)
+    
 
 #for item in schedulingReleaseDiffPerCluster:
 #    if len(item) > 50:
@@ -180,10 +197,10 @@ splitTimesPerCluster(schedulingReleaseDiff, executionTimeDict['all'], labels, nS
 #for item in timesPerCluster:
 #    if len(item) > 100:
 #        print(len(item))
-#        calcPFA2DSkewNorm(item)
+#        calcPFA2DGaussian(item)
+
 #calcPFAStateTransitions(labels, twoProcesses, nStates, 2)
 #calcPFAStatePredictions(labels, processes, nStates, nProcesses)
-#calcPFAStatePredictions(labels, twoProcesses, nStates, 2)
 
 
 #calcPFAMarkovChain(labels, nStates)

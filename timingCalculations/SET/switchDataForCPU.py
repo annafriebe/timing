@@ -1,11 +1,14 @@
 #!/usr/bin/env python
 
-def timeInNanoSeconds(timeStampString):
+def timeInMicroOrNano(timeStampString, microSeconds):
     timeStampNoColon = timeStampString.split(':')[0]
     sepTimeStamp = timeStampNoColon.split('.')
-    return int(sepTimeStamp[0]) * 1E9 + int(sepTimeStamp[1])
+    decimalFactor = 1E9
+    if (microSeconds):
+        decimalFactor = 1E6
+    return int(sepTimeStamp[0]) * decimalFactor + int(sepTimeStamp[1])
 
-def getSwitchDataForCPU(filePath, CPU):
+def getSwitchDataForCPU(filePath, CPU, microSeconds = False):
     with open(filePath) as f:
         lines = f.readlines()
         nLines = len(lines)
@@ -15,14 +18,14 @@ def getSwitchDataForCPU(filePath, CPU):
             event = line[3]
             cpu = line[1]
             if event == 'sched_switch:' and cpu == CPU:
-                time = timeInNanoSeconds(line[2])
+                time = timeInMicroOrNano(line[2], microSeconds)
                 inProcess = line[8]
                 outProcess = line[4]
                 switchDataForCPU.append([time, inProcess, outProcess])
         return switchDataForCPU
 
 
-def getWakeupDataForCPU(filePath, CPU):
+def getWakeupDataForCPU(filePath, CPU, microSeconds = False):
     with open(filePath) as f:
         lines = f.readlines()
         nLines = len(lines)
@@ -32,7 +35,7 @@ def getWakeupDataForCPU(filePath, CPU):
             event = line[3]
             cpu = line[1]
             if event == 'sched_wakeup:' and cpu == CPU:
-                time = timeInNanoSeconds(line[2])
+                time = timeInMicroOrNano(line[2], microSeconds)
                 process = line[4]
                 wakeupDataForCPU.append([time, process])
         return wakeupDataForCPU
@@ -46,7 +49,7 @@ def getWakeupTimes(wakeupData, process):
             wakeupTimesList.append(time)
     return wakeupTimesList
 
-def getSwitchAndWakeupDataForCPU(filePath, CPU):
+def getSwitchAndWakeupDataForCPU(filePath, CPU, microSeconds = False):
     timingData = []
     with open(filePath) as f:
         lines = f.readlines()
@@ -57,12 +60,12 @@ def getSwitchAndWakeupDataForCPU(filePath, CPU):
             cpu = line[1]
             if (cpu == CPU):
                 if event == 'sched_switch:':
-                    time = timeInNanoSeconds(line[2])
+                    time = timeInMicroOrNano(line[2], microSeconds)
                     inProcess = line[8]
                     outProcess = line[4]
                     timingData.append([0, time, inProcess, outProcess])
                 if event == 'sched_wakeup:': 
-                    time = timeInNanoSeconds(line[2])
+                    time = timeInMicroOrNano(line[2], microSeconds)
                     process = line[4]
                     timingData.append([1, time, process])
         return timingData
