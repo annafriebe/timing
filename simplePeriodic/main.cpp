@@ -1,20 +1,16 @@
 #include <iostream>
-#include <memory>
 #include <thread>
-#include <atomic>
 #include <chrono>
-#include <functional>
 #include <pthread.h>
 #include <sched.h>
-#include "Timer.h"
 
 using namespace std;
 
 namespace{
-	const double period = 0.01;
+	const chrono::milliseconds periodDuration(10);
 	const int moduloVal = 4711;
 	const int addVal = 47;
-	void task(int& nPeriod, array<int, 100>& calcValues){
+	void task(int& nPeriod, array<int, 100>& calcValues) noexcept {
 		for(auto& val : calcValues){
 			val = (val + addVal)%moduloVal;
 		}
@@ -23,11 +19,8 @@ namespace{
 }
 
 int main(int argc, char *argv[]) {
-	Timer timer;
 	array<int, 100> calcValues;
-	timer.start();
 	int nPeriods = 0;
-	double currentPeriod = 0;
 	pthread_t this_thread = pthread_self();
 	struct sched_param params;
 	params.sched_priority = sched_get_priority_max(SCHED_RR);
@@ -59,11 +52,13 @@ int main(int argc, char *argv[]) {
 	for(auto& val : calcValues){
 		val = rand()%moduloVal;
 	}
+	std::chrono::steady_clock::time_point next = 
+		chrono::steady_clock::now();	
 
 	while(1){
 		task(nPeriods, calcValues);
-		currentPeriod = nPeriods * period;
-		timer.sleepUntil(currentPeriod);
+		next += periodDuration;
+		std::this_thread::sleep_until(next);
 	}
 	cerr << "nPeriods: " << nPeriods << endl;
 	for(const int& val:calcValues){

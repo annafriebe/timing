@@ -7,10 +7,10 @@
 CC = g++ 
 FLAGS = -Wall -pedantic -Werror -std=c++17 -pthread
 
-SOURCES = Timer.cpp
+SOURCES = 
 MAIN = main.cpp
 
-HEADERS = Timer.h
+HEADERS = 
 FILE = simplePeriodic
 MAKE = make
 
