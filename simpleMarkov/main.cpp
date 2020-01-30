@@ -8,7 +8,7 @@
 using namespace std;
 
 namespace{
-const chrono::milliseconds periodDuration(10);
+const chrono::milliseconds periodDuration(5);
 const int moduloVal = 4711;
 const int addVal = 47;
 const array<double, 3> trans1 =  {0.7, 0.2, 0.1};
@@ -78,9 +78,9 @@ int main(int argc, char *argv[]) {
   
   // Check the correct policy was applied
   if(policy != SCHED_FIFO) {
-    cerr << "Scheduling is NOT SCHED_RR!" << std::endl;
+    cerr << "Scheduling is NOT SCHED_FIFO!" << std::endl;
   } else {
-    cerr << "SCHED_RR OK" << endl;
+    cerr << "SCHED_FIFO OK" << endl;
   }
   
   // Print thread scheduling priority
