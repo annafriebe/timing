@@ -36,17 +36,23 @@ void task(int& nPeriod, array<int, 100>& calcValues, int& state, int transitionP
   switch(state){
   case 0:
     for(int i=0; i<20; ++i){
-      calcValues[i] = (calcValues[i] + addVal)%moduloVal;
+      for(int j=0; j<10; ++j){
+        calcValues[i] = (calcValues[i] + addVal)%moduloVal;
+      }
     }
     break;
   case 1:
     for(int i=0; i<50; ++i){
-      calcValues[i] = (calcValues[i] + addVal)%moduloVal;
+      for(int j=0; j<10; ++j){
+        calcValues[i] = (calcValues[i] + addVal)%moduloVal;
+      }
     }
     break;
   case 2:
     for(auto& val : calcValues){
-      val = (val + addVal)%moduloVal;
+      for(int j=0; j<10; ++j){
+        val = (val + addVal)%moduloVal;
+      }
     }
     break;
   default:
@@ -98,7 +104,7 @@ int main(int argc, char *argv[]) {
   std::chrono::steady_clock::time_point next = 
     chrono::steady_clock::now();	
   
-  while(nPeriods < 4000){
+  while(nPeriods < 10000){
     task(nPeriods, calcValues, state, transitionDis(gen));
     next += periodDuration;
     std::this_thread::sleep_until(next);
