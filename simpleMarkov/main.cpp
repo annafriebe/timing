@@ -36,23 +36,17 @@ void task(int& nPeriod, array<int, 100>& calcValues, int& state, int transitionP
   switch(state){
   case 0:
     for(int i=0; i<20; ++i){
-      for(int j=0; j<10; ++j){
-        calcValues[i] = (calcValues[i] + addVal)%moduloVal;
-      }
+      calcValues[i] = (calcValues[i] + addVal)%moduloVal;
     }
     break;
   case 1:
     for(int i=0; i<50; ++i){
-      for(int j=0; j<10; ++j){
-        calcValues[i] = (calcValues[i] + addVal)%moduloVal;
-      }
+      calcValues[i] = (calcValues[i] + addVal)%moduloVal;
     }
     break;
   case 2:
-    for(auto& val : calcValues){
-      for(int j=0; j<10; ++j){
-        val = (val + addVal)%moduloVal;
-      }
+    for(int i=0; i<100; ++i){
+        calcValues[i] = (calcValues[i] + addVal)%moduloVal;
     }
     break;
   default:
